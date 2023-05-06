@@ -31,10 +31,8 @@ public class WordSorter {
         double[][] values = null; // where we are putting the data when we get it?
 
         // let's get the file name from the user and try to open it
-        // System.out.println("Enter the data file name: ");
-        // fileName = scan.next();
-
-        fileName = "source.txt";
+        System.out.println("Enter the data file name: ");
+        fileName = scan.next();
 
         // open the file and read the data
         try {
