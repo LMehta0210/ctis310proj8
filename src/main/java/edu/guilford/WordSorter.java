@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.TreeSet;
@@ -44,8 +47,44 @@ public class WordSorter {
             BufferedReader dataBuffer = new BufferedReader(dataFile); // so that we are reading the data efficiently
             // (not one character at a time)
             scanFile = new Scanner(dataBuffer);
-            TreeSet<String> allWords = getAllWords(scanFile);
-            System.out.println(allWords);
+            TreeSet<Word> countedWords = getWords(scanFile);
+            Word.sortCount = true;
+            //add the words to a list
+            //something simple I could sort, and could handle equal values
+            LinkedList<Word> words = new LinkedList<Word>();
+            for (Word word : countedWords) {
+                words.add(word);
+            }
+            //sort the words by count
+            Collections.sort(words);
+
+            //prompt a user for a word
+            System.out.println("Enter a word to search for: ");
+
+            //Process the word
+            String searchWord = scan.next().toLowerCase();
+            // remove punctutation, buyt not special characters
+            searchWord = searchWord.replaceAll("[^a-zA-Z0-9]", "");
+            // remove if the token is a number
+            if (searchWord.matches("[0-9]+")) {
+                System.out.println("Numbers are not accepted");
+            }
+            else{
+                //sequential search for the word
+                //binary search doesn't work because the list is sorted by count, not alphabetically
+                boolean found = false;
+                for (Word word: words){
+                    if (word.getWord().equals(searchWord)){
+                        System.out.println("The word \"" + searchWord + "\" appears " + word.getCount() + " times.");
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found){
+                    System.out.println("The word " + searchWord + " does not appear in the file.");
+                }
+            }
+
         } catch (URISyntaxException | FileNotFoundException | NullPointerException e) { // | allow us to catch multiple
                                                                                         // exception types
             // and do same basic thing with any of them
@@ -63,8 +102,10 @@ public class WordSorter {
          */
     }
 
-    public static TreeSet<String> getAllWords(Scanner scan) {
-        TreeSet<String> words = new TreeSet<String>();
+    public static TreeSet<Word> getWords(Scanner scan) {
+        //sorts the words alphabetically already
+        //allows us to catch a duplicate and increment the count
+        TreeSet<Word> words = new TreeSet<Word>();
         while (scan.hasNext()) {
             String rawWord = scan.next().toLowerCase();
             // remove punctutation, buyt not special characters
@@ -75,7 +116,13 @@ public class WordSorter {
             }
             //if the String isn't empty, add it to the Tree Set
             if (!rawWord.isEmpty()) {
-                words.add(rawWord);
+                Word word = new Word(rawWord);
+                //if the word is already in the set, increment the count
+                if (words.contains(word)) {
+                    words.ceiling(word).incrementCount();
+                    continue;
+                }
+                words.add(word);
             }
         }
         return words;
